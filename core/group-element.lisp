@@ -1724,7 +1724,7 @@
          (z   (fe-mul x (precomputed-ge-yplusx q)))
          (y   (fe-mul y (precomputed-ge-yminusx q)))
          (tau (fe-mul (precomputed-ge-xy2d q) (extended-ge-tau p)))
-         (t0  (fe-add z z))
+         (t0  (fe-add (extended-ge-z p) (extended-ge-z p)))
          (x   (fe-sub z y))
          (y   (fe-add z y))
          (z   (fe-add t0 tau))
@@ -1761,8 +1761,8 @@
 (defun select-point (p b)
   (let* ((tau  (ge-zero-precomputed))
          (mtau (ge-zero-precomputed))
-         (bneg (logand (>> b 31 32) 1))
-         (babs (- b (<< (logand (- bneg) b) 1 32)))
+         (bneg (- (logand (>> b 31 32) 1)))
+         (babs (- b (<< (logand bneg b) 1 32)))
          (points
           (the (simple-array precomputed-group-element (8))
                (aref *base* p))))
@@ -1772,7 +1772,7 @@
        :do (ge-cmove-precomputed tau (aref points i) e))
     (setf (precomputed-ge-yplusx mtau) (fe-copy (precomputed-ge-yminusx tau)))
     (setf (precomputed-ge-yminusx mtau) (fe-copy (precomputed-ge-yplusx tau)))
-    (setf (precomputed-ge-xy2d mtau) (fe-copy (precomputed-ge-xy2d tau)))
+    (setf (precomputed-ge-xy2d mtau) (fe-neg (precomputed-ge-xy2d tau)))
     (ge-cmove-precomputed tau mtau bneg)
     tau))
 
@@ -1781,7 +1781,7 @@
 (defun ge-scalar-mul-base (a)
   "Compute H = a*B, where B is a base point for a given group
    i.e. a point (x, 4/5), x > 0."
-  (let ((e (make-array 64 :element-type '(unsigned-byte 8))))
+  (let ((e (make-array 64 :element-type '(signed-byte 8))))
     (loop
        :for i :below +scalar-size+
        :for v := (aref a i)

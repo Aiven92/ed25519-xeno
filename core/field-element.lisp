@@ -164,7 +164,6 @@
   "Destructively perform assignment f = if b == 1 then g else f
    without revealing the value of b."
   (loop
-     :with b :of-type int32 := (- b)
      :for i :below +fe-size+
      :for c := (logand b (logxor (aref f i) (aref g i)))
      :do (setf (aref f i) (logxor (aref f i) c))))
